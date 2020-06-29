@@ -9,7 +9,14 @@ const passport = require('passport')
 const session = require('express-session')
 const MongoStore = require('connect-mongo')(session)
 const connectDB = require('./config/db')
+const Handlebars = require('handlebars')
+const {allowInsecurePrototypeAccess} = require('@handlebars/allow-prototype-access')
 
+
+const employeeController = require('./controllers/employeeController');
+const contactoController = require('./controllers/contactoController');
+const citaController = require('./controllers/citaController');
+const notaController = require('./controllers/notaController');
 // Load config
 dotenv.config({ path: './config/config.env' })
 
@@ -63,6 +70,7 @@ app.engine(
     },
     defaultLayout: 'main',
     extname: '.hbs',
+    handlebars: allowInsecurePrototypeAccess(Handlebars)
   })
 )
 app.set('view engine', '.hbs')
@@ -94,6 +102,13 @@ app.use(express.static(path.join(__dirname, 'public')))
 app.use('/', require('./routes/index'))
 app.use('/auth', require('./routes/auth'))
 app.use('/stories', require('./routes/stories'))
+
+
+app.use('/contacto', contactoController);
+app.use('/employee', employeeController);
+app.use('/cita', citaController);
+app.use('/nota', notaController);
+
 
 const PORT = process.env.PORT || 3000
 
