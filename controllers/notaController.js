@@ -3,14 +3,17 @@ var router = express.Router();
 const mongoose = require('mongoose');
 var User = require('../models/nota.model.js');
 const Nota = mongoose.model('nota');
+const { ensureAuth } = require('../middleware/auth')
 
-router.get('/', (req, res) => {
+
+router.get('/', ensureAuth,(req, res) => {
     res.render("nota/addOrEdit", {
         viewTitle: "Crear Notas"
     });
 });
 
-router.post('/', (req, res) => {
+router.post('/', ensureAuth,(req, res) => {
+
     if (req.body._id == '')
         insertRecord(req, res);
         else
@@ -19,15 +22,18 @@ router.post('/', (req, res) => {
 
 function insertRecord(req, res) {
     var nota = new Nota();
+    nota.user = req.user.id;
     nota.titulo = req.body.titulo;
     nota.nota = req.body.nota;
     nota.fecha = req.fecha;
     
+
+
     
     nota.save((err, doc) => {
-        if (!err)
+        if (!err){
             res.redirect('nota/list');
-        else {
+        }else {
             if (err.name == 'ValidationError') {
                 handleValidationError(err, req.body);
                 res.render("nota/addOrEdit", {
@@ -58,10 +64,21 @@ function updateRecord(req, res) {
     });
 }
 
-
-
-router.get('/list', (req, res) => {
-    Nota.find((err, docs) => {
+/* router.get('/list', ensureAuth, async (req, res) => {
+    try {
+      const stories = await Nota.find({ user: req.user.id }).lean()
+      res.render('nota/list', {
+        name: req.user.firstName,
+        stories,
+      })
+    } catch (err) {
+      console.error(err)
+      res.render('error/500')
+    }
+  })
+ */
+router.get('/list',  ensureAuth,(req, res) => {
+    Nota.find({ user: req.user.id },(err, docs) => {
         if (!err) {
             res.render("nota/list", {
                 list: docs
@@ -88,7 +105,7 @@ function handleValidationError(err, body) {
     }
 }
 
-router.get('/:id', (req, res) => {
+router.get('/:id', ensureAuth,(req, res) => {
     Nota.findById(req.params.id, (err, doc) => {
         if (!err) {
             res.render("nota/addOrEdit", {
@@ -99,7 +116,7 @@ router.get('/:id', (req, res) => {
     }).lean();
 });
 
-router.get('/delete/:id', (req, res) => {
+router.get('/delete/:id', ensureAuth,(req, res) => {
     Nota.findByIdAndRemove(req.params.id, (err, doc) => {
         if (!err) {
             res.redirect('/nota/list');

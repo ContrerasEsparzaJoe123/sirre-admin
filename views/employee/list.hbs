@@ -42,7 +42,7 @@
             <td>{{this.puesto}}</td>
             <td>{{this.telefono}}</td>
             <td>{{this.correo}}</td>
-            <td>{{this.date}}</td>
+            <td>{{formatDate this.createdAt 'MMMM Do YYYY, h:mm:ss a'}}</td>
             
             <td>
                 <a href="/employee/{{this._id}}"><i class="material-icons" aria-hidden="true">edit</i></a>

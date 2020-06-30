@@ -35,7 +35,7 @@
             <td>{{this.telefono}}</td>
             <td>{{this.ocupacion}}</td>
             <td>{{this.correo}}</td>
-            <td>{{this.date}}</td>
+            <td>{{formatDate this.createdAt 'MMMM Do YYYY, h:mm:ss a'}}</td>
             
             <td>
                 <a href="/contacto/{{this._id}}"><i class="material-icons" aria-hidden="true">edit</i></a>

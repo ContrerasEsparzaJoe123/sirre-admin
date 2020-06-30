@@ -3,14 +3,16 @@ var router = express.Router();
 const mongoose = require('mongoose');
 var Cli = require('../models/employee.model.js');
 const Employee = mongoose.model('clientes');
+const { ensureAuth } = require('../middleware/auth')
 
-router.get('/', (req, res) => {
+
+router.get('/',  ensureAuth,(req, res) => {
     res.render("employee/addOrEdit", {
         viewTitle: "Insertar Cliente"
     });
 });
 
-router.post('/', (req, res) => {
+router.post('/',  ensureAuth,(req, res) => {
     if (req.body._id == '')
         insertRecord(req, res);
         else
@@ -19,6 +21,7 @@ router.post('/', (req, res) => {
 
 function insertRecord(req, res) {
     var employee = new Employee();
+    employee.user = req.user.id;
     employee.empresa = req.body.empresa;
     employee.persona = req.body.persona;
     employee.puesto = req.body.puesto;
@@ -63,8 +66,8 @@ function updateRecord(req, res) {
 
 
 
-router.get('/list', (req, res) => {
-    Employee.find((err, docs) => {
+router.get('/list',  ensureAuth,(req, res) => {
+    Employee.find({ user: req.user.id },(err, docs) => {
         if (!err) {
             res.render("employee/list", {
                 list: docs
@@ -91,7 +94,7 @@ function handleValidationError(err, body) {
     }
 }
 
-router.get('/:id', (req, res) => {
+router.get('/:id',  ensureAuth,(req, res) => {
     Employee.findById(req.params.id, (err, doc) => {
         if (!err) {
             res.render("employee/addOrEdit", {
@@ -102,7 +105,7 @@ router.get('/:id', (req, res) => {
     }).lean();
 });
 
-router.get('/delete/:id', (req, res) => {
+router.get('/delete/:id',  ensureAuth,(req, res) => {
     Employee.findByIdAndRemove(req.params.id, (err, doc) => {
         if (!err) {
             res.redirect('/employee/list');

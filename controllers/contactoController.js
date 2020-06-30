@@ -3,14 +3,16 @@ var router = express.Router();
 const mongoose = require('mongoose');
 var User = require('../models/contacto.model.js');
 const Contacto = mongoose.model('contacto');
+const { ensureAuth } = require('../middleware/auth')
 
-router.get('/', (req, res) => {
+
+router.get('/',  ensureAuth,(req, res) => {
     res.render("contacto/addOrEdit", {
         viewTitle: "Insertar Contacto"
     });
 });
 
-router.post('/', (req, res) => {
+router.post('/',  ensureAuth,(req, res) => {
     if (req.body._id == '')
         insertRecord(req, res);
         else
@@ -19,6 +21,7 @@ router.post('/', (req, res) => {
 
 function insertRecord(req, res) {
     var contacto = new Contacto();
+    contacto.user = req.user.id;
     contacto.nombre = req.body.nombre;
     contacto.telefono = req.body.telefono;
     contacto.ocupacion = req.body.ocupacion;
@@ -62,8 +65,8 @@ function updateRecord(req, res) {
 
 
 
-router.get('/list', (req, res) => {
-    Contacto.find((err, docs) => {
+router.get('/list',  ensureAuth,(req, res) => {
+    Contacto.find({ user: req.user.id },(err, docs) => {
         if (!err) {
             res.render("contacto/list", {
                 list: docs
@@ -90,7 +93,7 @@ function handleValidationError(err, body) {
     }
 }
 
-router.get('/:id', (req, res) => {
+router.get('/:id',  ensureAuth,(req, res) => {
     Contacto.findById(req.params.id, (err, doc) => {
         if (!err) {
             res.render("contacto/addOrEdit", {
@@ -101,7 +104,7 @@ router.get('/:id', (req, res) => {
     }).lean();
 });
 
-router.get('/delete/:id', (req, res) => {
+router.get('/delete/:id',  ensureAuth,(req, res) => {
     Contacto.findByIdAndRemove(req.params.id, (err, doc) => {
         if (!err) {
             res.redirect('/contacto/list');

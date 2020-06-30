@@ -3,14 +3,15 @@ var router = express.Router();
 const mongoose = require('mongoose');
 var User = require('../models/cita.model.js');
 const Cita = mongoose.model('cita');
+const { ensureAuth } = require('../middleware/auth')
 
-router.get('/', (req, res) => {
+router.get('/', ensureAuth,(req, res) => {
     res.render("cita/addOrEdit", {
         viewTitle: "Crear CIta"
     });
 });
 
-router.post('/', (req, res) => {
+router.post('/', ensureAuth,(req, res) => {
     if (req.body._id == '')
         insertRecord(req, res);
         else
@@ -19,9 +20,10 @@ router.post('/', (req, res) => {
 
 function insertRecord(req, res) {
     var cita = new Cita();
+    cita.user = req.user.id;
     cita.empleado = req.body.empleado;
     cita.persona = req.body.persona;
-    cita.fecha = req.fecha;
+    cita.fecha = req.body.fecha;
     
     
     cita.save((err, doc) => {
@@ -60,8 +62,8 @@ function updateRecord(req, res) {
 
 
 
-router.get('/list', (req, res) => {
-    Cita.find((err, docs) => {
+router.get('/list', ensureAuth,(req, res) => {
+    Cita.find({ user: req.user.id },(err, docs) => {
         if (!err) {
             res.render("cita/list", {
                 list: docs
@@ -88,7 +90,7 @@ function handleValidationError(err, body) {
     }
 }
 
-router.get('/:id', (req, res) => {
+router.get('/:id', ensureAuth,(req, res) => {
     Cita.findById(req.params.id, (err, doc) => {
         if (!err) {
             res.render("cita/addOrEdit", {
@@ -99,7 +101,7 @@ router.get('/:id', (req, res) => {
     }).lean();
 });
 
-router.get('/delete/:id', (req, res) => {
+router.get('/delete/:id', ensureAuth,(req, res) => {
     Cita.findByIdAndRemove(req.params.id, (err, doc) => {
         if (!err) {
             res.redirect('/cita/list');
